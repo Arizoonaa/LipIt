@@ -48,7 +48,7 @@ def init_scheduler():
             replace_existing=True,
         )
         
-        # 날씨 크롤링: 11시 1분, 17시 1분으로 변경
+        # 날씨 크롤링: 11시 1분, 17시 1분으로 변경g
         scheduler.add_job(
             crawl_weather_job,
             CronTrigger(hour='11,17', minute='1'),
