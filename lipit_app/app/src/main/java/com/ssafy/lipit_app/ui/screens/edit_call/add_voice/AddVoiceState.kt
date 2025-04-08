@@ -34,7 +34,7 @@ enum class RecordingStatus {
 
 // 샘플 문장 목록 - 이 파일에 함께 정의
 val sampleSentences = listOf(
-   // "Hi",
+//    "Hi",
    "Hello, how are you doing today?",
    "I really enjoy reading books in the morning.",
     "The quick brown fox jumps over the lazy dog.",

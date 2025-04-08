@@ -9,7 +9,7 @@ import retrofit2.http.POST
 
 interface S3PresignService {
 
-    @POST("api/s3/presign")
+    @POST("s3/presign")
     suspend fun getPresignedUrl(@Body request: S3UploadRequest): Response<BaseResponse<S3UploadResponse>>
 
 }
