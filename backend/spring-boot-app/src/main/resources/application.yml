@@ -1,0 +1,71 @@
+spring:
+  jackson:
+    time-zone: ${TZ}
+
+  profiles:
+    active: prod
+
+  application:
+    name: Lip It
+
+  messages:
+    basename: ValidationMessages
+    encoding: UTF-8
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: false
+        jdbc:
+          time_zone: ${TZ}
+    show-sql: true
+
+  sql:
+    init: 실행 시 # init.sql 실행
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
+
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  cache:
+    type: none  # 기본 캐시 타입 제거 (CompositeCacheManager 사용)
+
+server:
+  servlet:
+    context-path: /spring/api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  #  access-token-expiration: 900000  # 액세스 토큰 만료 시간 (15분, 단위: 밀리초)
+  access-token-expiration: 86400000  # 1일
+  refresh-token-expiration: 604800000  # 리프레시 토큰 만료 시간 (7일, 단위: 밀리초)
+
+springdoc: # Swagger
+  #  paths-to-match:
+  #    - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
+  #  api-docs:
+  #    path: /api/v3/api-docs  # OpenAPI 문서 경로를 /api로 설정
+  swagger-ui:
+    operationsSorter: method  # API 정의된 순서대로 정렬
+    tagsSorter: alpha  # 태그는 알파벳 순서로 정렬
+    default-model-expand-depth: 0  # 모델 자동 확장 비활성화
+    default-models-expand-depth: -1  # 모델 자동 확장 비활성화 (example 제거)

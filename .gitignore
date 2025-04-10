@@ -579,4 +579,22 @@ obj/
 
 !/gradle/wrapper/gradle-wrapper.jar
 
+# 환경 변수 파일
+.env
+
+# Firebase 서비스 계정 키
+backend/spring-boot-app/src/main/resources/firebase/firebase_service_key.json
+
+# GCP 서비스 계정 키
+backend/fastapi-app/gcp/gcp_service_account.json
+
+# Audio 파일
+ai/audio/
+ai/result/
+ai/speaker_cache/
+
+# pth 모델 파일
+# Audio 파일
+ai/model/
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,java,intellij+all,gradle,redis,visualstudiocode,git,androidstudio,android,kotlin,python,jupyternotebooks

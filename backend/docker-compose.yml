@@ -1,0 +1,106 @@
+services:
+
+  spring-boot:
+    # build:
+    #  context: ./spring-boot-app # Spring Boot 프로젝트가 있는 폴더
+    #  dockerfile: Dockerfile
+    image: itsanisland/lipit-spring-boot
+    container_name: lipit-spring-boot
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env # .env 파일을 불러오기
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_PROD_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - TZ=${TZ}
+    restart: always
+    networks:
+      - app-network
+
+  fastapi:
+    # build:
+    #  context: ./fastapi-app
+    #  dockerfile: Dockerfile
+    image: itsanisland/lipit-fastapi
+    container_name: lipit-fastapi
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PROD_URI=${POSTGRES_PROD_URI}
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    container_name: lipit-postgres
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TZ={TZ}
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: lipit-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    container_name: lipit-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    depends_on:
+      - spring-boot
+    networks:
+      - app-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: lipit-certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data: # Docker 볼륨 선언
+  mongo_data:
+  redis_data:
+    driver: local
+  jenkins_home: # 볼륨을 정의하여 Jenkins 설정을 유지

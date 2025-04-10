@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  flyway:
+    image: flyway/flyway:10.10
+    container_name: flyway-migrate
+    command: -url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} \
+             -user=${POSTGRES_USER} \
+             -password=${POSTGRES_PASSWORD} \
+             -locations=filesystem:/flyway/sql migrate
+    volumes:
+      - ./spring-boot-app/src/main/resources/db/migration:/flyway/sql
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  alembic:
+    image: itsanisland/lipit-fastapi  # FastAPI 이미지를 재활용
+    container_name: alembic-migrate
+    command: alembic upgrade head
+    working_dir: /app
+    volumes:
+      - ./fastapi-app:/app
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PROD_URI=${POSTGRES_PROD_URI}
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true

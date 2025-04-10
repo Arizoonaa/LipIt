@@ -1,0 +1,27 @@
+# Python 관련 캐시 파일
+__pycache__/
+*.py[cod]
+*.pyc
+*.so
+
+# 민감 파일
+.env
+*.env
+*.secret
+
+# 미디어, 테스트 파일
+*.wav
+*.mp3
+media/
+static/
+*.zip
+
+# 테스트/로컬 설정
+*.log
+*.sqlite3
+.vscode/
+.idea/
+.DS_Store
+
+# OS & Docker
+docker-compose.override.yml
