@@ -1,4 +1,6 @@
 
+![](https://velog.velcdn.com/images/bmlsj/post/8c9a2955-8e23-4e89-9e82-367497bcfdb5/image.png)
+
 
 ## 💗 **싸피 12기 2학기 특화 프로젝트**
 ### AI 영어 스피킹 앱 Lip It!
@@ -13,12 +15,12 @@
 
 
 ## 목차
-1. 팀원 소개
-2. 기술 스택
-3. 서비스 소개
-4. 산출물
-5. UI/UX 화면
-6. 프로젝트 후기
+1. [팀원 소개](#팀원-소개)
+2. [기술 스택](#기술-스택)
+3. [서비스 소개](#서비스-소개)
+4. [산출물](#산출물)
+5. [결과물(UI/UX 화면)](#결과물(UI/UX-화면))
+6. [프로젝트 후기](#프로젝트-후기)
 
 </br>
 
@@ -28,9 +30,9 @@
 
 | 이름    | 역할  | 별명    | 파트 |
 | ------ | ------ | ---- | ---|
-| **이승지**  | 팀장 | | AI, Android, FastAPI |   
+| **이승지**  | 팀장 | 브로큰 | AI, Android, FastAPI |   
 | **이사랑** | 팀원 | 사란 | AI, Android, FastAPI |      
-| **서정후** |  팀원 | 즈후 | 디자인, AI  |     
+| **서정후** |  팀원 | 즈후 | 디자인, Android  |     
 | **서미지** | 팀원 | 미디 | 인프라, 백엔드 |  
 | **김환** | 팀원 | 애리조나  | 백엔드  |  
  | **구민성** | 팀원 | 베이비  | 백엔드 |  
@@ -50,9 +52,9 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-009485.svg?logo=fastapi&logoColor=white)](#)
 [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#)
 
-
 [![Firebase](https://img.shields.io/badge/Firebase-039BE5?logo=Firebase&logoColor=white)](#)
-
+[![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000?logo=intellij-idea&logoColor=white)](#)
+![Amazon S3](https://img.shields.io/badge/Amazon%20S3-FF9900?&logo=amazons3&logoColor=white)
 
 ### 인프라
 
@@ -62,6 +64,9 @@
 [![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?logo=nginx&logoColor=white)](#)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](#)
 [![Jenkins](https://img.shields.io/badge/Jenkins-D24939?logo=jenkins&logoColor=white)](#)
+
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?logo=Cloudflare&logoColor=white)](#)
+[![CloudFront](https://img.shields.io/badge/CloudFront-D24939?logo=cloudfront&logoColor=white)](#)
 
 
 
@@ -77,11 +82,22 @@
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=fff)](#)
 [![Anaconda](https://img.shields.io/badge/Anaconda-44A833?logo=anaconda&logoColor=fff)](#)
+[![Juypter](https://img.shields.io/badge/Jupyter%20Notebook-FA0F00?logo=jupyter&logoColor=white)](#)
 [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#)
+
+
+- 사용 모델 : 
+[![Hallo](https://img.shields.io/badge/Hallo-44A833?logo=anaconda&logoColor=fff)](#)
+[![VITS](https://img.shields.io/badge/VITS-44A833?logo=anaconda&logoColor=fff)](#)
+[![XTTS-v2](https://img.shields.io/badge/XTTS-v2-44A833?logo=anaconda&logoColor=fff)](#)
+[![OpenAI](https://img.shields.io/badge/OpenAI-74aa9c?logo=openai&logoColor=fff)](#)
+
+
 
 ### 디자인
 
 [![Figma](https://img.shields.io/badge/Figma-F24E1E?logo=figma&logoColor=white)](#)
+[![Canva](https://img.shields.io/badge/Canva-00C4CC?logo=Canva&logoColor=white)](#)
 
 
 ### 상태 관리
@@ -98,7 +114,7 @@
 
 </br>
 
-## 📌 서비스 설명
+## 📌 서비스 소개
 
 ### 1. 기획의도
 
@@ -111,8 +127,8 @@
 
 ## 📌산출물 
 - [API 명세서 및 Swagger]()
-- [ERD 다이어그램]()
-- [시스템 아키텍처]()
+- [ERD 다이어그램](docs/ERD.md)
+- [시스템 아키텍처](docs/SystemArchitecture.md)
 - [Flow Chart]()
 - [시연 영상]()
 - [최종 발표 PPT]()
