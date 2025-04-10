@@ -254,7 +254,9 @@
 
 ### 영상 AI
 
-- 영상 AI GIF 들어갈 예정
+
+<img src="docs/hallo.gif" width="700"/>
+
 
 
 <br>
