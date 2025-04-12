@@ -11,6 +11,9 @@ data class SignupState(
     var isPasswordVisible_2: Boolean = false,
     var expanded: Boolean = false,
 
+    val isEmailValid: Boolean = true,
+    val emailErrorMessage: String = "",
+
     val isLoading: Boolean = false,
     val signupSuccess: Boolean = false,
     val errorMessage: String? = null,

@@ -39,7 +39,6 @@ fun SignupScreen(
 ) {
 
     val scrollState = rememberScrollState()
-    val focusManager = LocalFocusManager.current
 
     // 입력 필드 포커스 상태 추적
     var isAnyFieldFocused by remember { mutableStateOf(false) }
@@ -104,7 +103,6 @@ fun SignupScreenPreview() {
             pwConfirm = "",
             englishName = "",
             selectedGender = "",
-
             isPasswordVisible_1 = false,
             isPasswordVisible_2 = false,
             expanded = false

@@ -17,4 +17,6 @@ sealed class SignupIntent {
 
     // API 연동 관련
     object OnSignupClicked : SignupIntent()
+
+    data class ValidationEmail(val email: String) : SignupIntent()
 }

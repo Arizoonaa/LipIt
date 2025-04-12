@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.auth.Signup
 
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -87,9 +88,35 @@ class SignupViewModel : ViewModel() {
                     _state.value = _state.value.copy(signupSuccess = true, errorMessage = null)
                 }
             }
+
+            is SignupIntent.ValidationEmail -> {
+                validateEmail(intent.email)
+            }
         }
     }
 
+    // 이메일 유효성 검사 함수
+    private fun validateEmail(email: String): Boolean {
+        return if (email.isEmpty()) {
+            _state.value = _state.value.copy(
+                isEmailValid = false,
+                emailErrorMessage = "이메일을 입력해주세요."
+            )
+            false
+        } else if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            _state.value = _state.value.copy(
+                isEmailValid = true,
+                emailErrorMessage = ""
+            )
+            true
+        } else {
+            _state.value = _state.value.copy(
+                isEmailValid = false,
+                emailErrorMessage = "유효한 이메일 형식이 아닙니다."
+            )
+            false
+        }
+    }
 
     private fun signup() {
         viewModelScope.launch {

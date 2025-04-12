@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.auth.Signup.components
 
 import android.content.Context
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +37,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.components.SpacerHeight
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupIntent
@@ -40,7 +47,11 @@ import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupState
 import com.ssafy.lipit_app.ui.screens.auth.components.GenderSelectDialog
 
 @Composable
-fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent) -> Unit) {
+fun InputForm(
+    state: SignupState,
+    onSuccess: () -> Unit,
+    onIntent: (SignupIntent) -> Unit
+) {
 
     val context = LocalContext.current
 
@@ -54,6 +65,27 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
         onSuccess()
     }
 
+    // 이메일 유효성 상태 추적
+    var isEmailValid by remember { mutableStateOf(true) }
+    var emailErrorMessage by remember { mutableStateOf("") }
+
+    // 이메일 검증 함수
+    fun validateEmail(email: String): Boolean {
+        return if (email.isEmpty()) {
+            isEmailValid = true
+            emailErrorMessage = ""
+            true
+        } else if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            isEmailValid = true
+            emailErrorMessage = ""
+            true
+        } else {
+            isEmailValid = false
+            emailErrorMessage = "유효한 이메일 형식이 아닙니다."
+            false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,7 +97,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
         OutlinedTextField(
             value = state.id,
             onValueChange = { onIntent(SignupIntent.OnIdChanged(it)) },
-            placeholder = { Text("ID", color = Color(0xFFE2C7FF)) },
+            placeholder = { Text("Email", color = Color(0xFFE2C7FF)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -77,6 +109,20 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
             shape = RoundedCornerShape(12.dp),
             singleLine = true
         )
+
+        // 이메일 오류 메시지 표시
+        if (!isEmailValid) {
+            Text(
+                text = emailErrorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 2.dp),
+                textAlign = TextAlign.Start
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
 
         // 2. Input: PW
         SpacerHeight(18)
@@ -246,8 +292,15 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
                 text = "JOIN",
                 context = context,
                 state = state,
+                isEmailValid = isEmailValid,
                 onClick = {
-                    onIntent(SignupIntent.OnSignupClicked)
+                    // 이메일 형식 검증
+                    if (validateEmail(state.id)) {
+                        onIntent(SignupIntent.OnSignupClicked)
+                    } else {
+                        // 이메일 형식이 잘못된 경우 처리
+                        Toast.makeText(context, "유효한 이메일 형식이 아닙니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             )
 
@@ -264,6 +317,7 @@ fun CustomFilledSignupButton(
     text: String,
     context: Context,
     state: SignupState,
+    isEmailValid: Boolean,
     onClick: () -> Unit
 ) {
     Button(
@@ -275,7 +329,8 @@ fun CustomFilledSignupButton(
             containerColor = Color(0xFFA37BBD),
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        enabled = isEmailValid
     ) {
         Text(text = text, fontWeight = FontWeight.Bold, color = Color.White)
 
@@ -303,7 +358,8 @@ fun validateSignupInput(
     selectedGender: String
 ): String? {
     return when {
-        id.isBlank() -> "아이디를 입력해주세요."
+        id.isBlank() -> "이메일을 입력해주세요."
+        !Patterns.EMAIL_ADDRESS.matcher(id).matches() -> "유효한 이메일 형식이 아닙니다."
         password.isBlank() -> "비밀번호를 입력해주세요."
         passwordConfirm.isBlank() -> "비밀번호 확인을 입력해주세요."
         password != passwordConfirm -> "비밀번호가 일치하지 않아요."
