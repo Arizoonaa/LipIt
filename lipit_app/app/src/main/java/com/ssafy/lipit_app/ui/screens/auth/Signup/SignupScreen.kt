@@ -41,7 +41,7 @@ fun SignupScreen(
     val scrollState = rememberScrollState()
 
     // 입력 필드 포커스 상태 추적
-    var isAnyFieldFocused by remember { mutableStateOf(false) }
+    val isAnyFieldFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(isAnyFieldFocused) {
         if (isAnyFieldFocused) {

@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,6 +70,13 @@ fun InputForm(
     var isEmailValid by remember { mutableStateOf(true) }
     var emailErrorMessage by remember { mutableStateOf("") }
 
+    // 비밀번호 일치 여부 확인
+    val isPasswordMatching by remember(state.pw, state.pwConfirm) {
+        derivedStateOf {
+            state.pwConfirm.isEmpty() || state.pw == state.pwConfirm
+        }
+    }
+
     // 이메일 검증 함수
     fun validateEmail(email: String): Boolean {
         return if (email.isEmpty()) {
@@ -107,7 +115,7 @@ fun InputForm(
                 textColor = Color.White
             ),
             shape = RoundedCornerShape(12.dp),
-            singleLine = true
+            singleLine = true,
         )
 
         // 이메일 오류 메시지 표시
@@ -201,6 +209,23 @@ fun InputForm(
                 )
             }
         )
+
+        // 비밀번호 불일치 오류 메시지
+        if (!isPasswordMatching && state.pwConfirm.isNotEmpty()) {
+            Text(
+                text = "비밀번호가 일치하지 않습니다.",
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 2.dp),
+                textAlign = TextAlign.Start
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        } else {
+            SpacerHeight(18)
+        }
+
 
         // 4. 영문이름(별명, name) 영역
         SpacerHeight(18)
@@ -320,6 +345,18 @@ fun CustomFilledSignupButton(
     isEmailValid: Boolean,
     onClick: () -> Unit
 ) {
+
+    // 모든 필드가 입력되었는지 확인
+    val allFieldsFilled = state.id.isNotEmpty() &&
+            state.pw.isNotEmpty() &&
+            state.pwConfirm.isNotEmpty() &&
+            state.englishName.isNotEmpty() &&
+            state.selectedGender.isNotEmpty()
+
+    // 이메일 형식이 유효하고 모든 필드가 입력된 경우에만 버튼 활성화
+    val isButtonEnabled = isEmailValid && allFieldsFilled
+
+
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -327,11 +364,14 @@ fun CustomFilledSignupButton(
             .fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFFA37BBD),
-            contentColor = Color.White
+            contentColor = Color.White,
+            disabledContainerColor = Color.Gray.copy(alpha = 0.5f),
+            disabledContentColor = Color.White.copy(alpha = 0.5f)
         ),
         shape = RoundedCornerShape(12.dp),
-        enabled = isEmailValid
+        enabled = isButtonEnabled
     ) {
+
         Text(text = text, fontWeight = FontWeight.Bold, color = Color.White)
 
         LaunchedEffect(state.signupSuccess) {
