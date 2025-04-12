@@ -6,19 +6,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.components.SpacerHeight
 import com.ssafy.lipit_app.ui.screens.auth.Signup.components.InputForm
+import kotlinx.coroutines.delay
 
 // 회워가입 메인 화면 구성
 @Composable
@@ -27,6 +37,21 @@ fun SignupScreen(
     onIntent: (SignupIntent) -> Unit,
     onSuccess: () -> Unit
 ) {
+
+    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
+
+    // 입력 필드 포커스 상태 추적
+    var isAnyFieldFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isAnyFieldFocused) {
+        if (isAnyFieldFocused) {
+            // 약간의 지연 후 스크롤 (키보드가 완전히 열린 후)
+            delay(300)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -42,8 +67,10 @@ fun SignupScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween, // 위–아래 간격 자동 분배
+                .fillMaxSize()
+                .imePadding() // 키보드가 나타날 때 화면이 올라가도록 함
+                .verticalScroll(rememberScrollState()), //
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SpacerHeight(44)
