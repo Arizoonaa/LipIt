@@ -1,10 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.my_voice.components
 
 import android.util.Log
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,14 +20,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,20 +36,16 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.rememberAsyncImagePainter
-import com.airbnb.lottie.LottieProperty
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.airbnb.lottie.compose.rememberLottieDynamicProperties
-import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 
@@ -68,13 +55,34 @@ fun CustomVoiceScreen(
     selectedVoiceName: String,
     onVoiceChange: (Long) -> Unit
 ) {
+    // 현재 재생 중인 음성의 ID를 상태로 관리
+    var currentlyPlayingId by remember { mutableStateOf<Long?>(null) }
+    val context = LocalContext.current
+
+    // 하나의 ExoPlayer 인스턴스를 생성하고 관리
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        currentlyPlayingId = null
+                    }
+                }
+            })
+        }
+    }
+
+    // 컴포넌트가 파괴될 때 ExoPlayer 해제
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
-
         // 커스텀 음성이 없는 경우
         if (customVoices.isEmpty()) {
             Column(
@@ -87,11 +95,9 @@ fun CustomVoiceScreen(
                     color = Color.White,
                     fontSize = 16.sp
                 )
-
                 Spacer(modifier = Modifier.height(70.dp))
             }
         } else {
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -101,14 +107,39 @@ fun CustomVoiceScreen(
                 // 커스텀 음성 목록 표시
                 items(customVoices) { voice ->
                     Log.d("TAG", "CustomVoiceScreen: ${selectedVoiceName} ${voice.voiceName}")
+
+                    val isCurrentlyPlaying = currentlyPlayingId == voice.voiceId
+
                     CustomColumn(
                         voices = voice,
                         imageUrl = voice.customImageUrl,
                         voiceName = voice.voiceName,
                         isSelected = selectedVoiceName == voice.voiceName,
-                        onVoiceChange = { onVoiceChange(voice.voiceId) }
-                    )
+                        isPlaying = isCurrentlyPlaying,
+                        onVoiceChange = { onVoiceChange(voice.voiceId) },
+                        onPlayToggle = { shouldPlay ->
+                            if (shouldPlay) {
+                                // 다른 음성이 재생 중이면 중지
+                                if (currentlyPlayingId != null && currentlyPlayingId != voice.voiceId) {
+                                    exoPlayer.stop()
+                                }
 
+                                // 새 음성 재생 시작
+                                voice.audioUrl?.let { audioUrl ->
+                                    exoPlayer.setMediaItem(MediaItem.fromUri(audioUrl))
+                                    exoPlayer.prepare()
+                                    exoPlayer.play()
+                                    currentlyPlayingId = voice.voiceId
+                                }
+                            } else {
+                                // 현재 음성 정지
+                                if (currentlyPlayingId == voice.voiceId) {
+                                    exoPlayer.pause()
+                                    currentlyPlayingId = null
+                                }
+                            }
+                        }
+                    )
                     Spacer(modifier = Modifier.height(15.dp))
                 }
             }
@@ -122,10 +153,10 @@ fun CustomColumn(
     imageUrl: String,
     voiceName: String,
     onVoiceChange: (Long) -> Unit,
-    isSelected: Boolean = false
+    onPlayToggle: (Boolean) -> Unit,
+    isSelected: Boolean = false,
+    isPlaying: Boolean = false
 ) {
-
-    var isPlaying by remember { mutableStateOf(false) }
     val rememberedSelected = rememberUpdatedState(isSelected).value
 
     Log.d("CustomColumn", "이미지 URL: $imageUrl, 비어있음: ${imageUrl.isEmpty()}")
@@ -160,16 +191,13 @@ fun CustomColumn(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             val painter = rememberAsyncImagePainter(
                 model = imageUrl.ifEmpty { R.drawable.img_add_image }
             )
-
 
             Box(
                 modifier = Modifier
@@ -184,7 +212,6 @@ fun CustomColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-
             }
 
             Text(
@@ -204,21 +231,9 @@ fun CustomColumn(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null  // 클릭 효과(리플 효과) 제거
             ) {
-                // 클릭 시 상태만 변경
-                isPlaying = !isPlaying
+                // 재생 상태 토글하고 부모 컴포넌트에 알림
+                onPlayToggle(!isPlaying)
             }
         )
-
-
-        if (isPlaying && voices.audioUrl != null) {
-            CustomVoicePlayer(
-                videoUrl = voices.audioUrl,
-                isLooping = false,
-                onPlayStateChanged = { playing ->
-                    isPlaying = playing
-                }
-            )
-        }
-
     }
 }
