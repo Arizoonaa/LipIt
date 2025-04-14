@@ -19,7 +19,7 @@ data class MainState(
     val level: Int = 1,
 
     // Weekly Calls 파트
-    val selectedDay: String = getTodayDay(),
+    var selectedDay: String = getTodayDay(),
     val callItems: List<CallItem> = listOf(
         CallItem(
             id = 1,
