@@ -63,7 +63,6 @@ class VoiceCallViewModel : ViewModel() {
         }
     }
 
-
     fun convertToTextMessages(): List<ChatMessageText> {
         return chatMessages.map { msg ->
             ChatMessageText(
@@ -547,7 +546,6 @@ class VoiceCallViewModel : ViewModel() {
         if (!isConnected && !isConnecting) { // oom 방지
             connectWebSocket()
         }
-
     }
 
     private val MAX_QUEUE_SIZE = 3

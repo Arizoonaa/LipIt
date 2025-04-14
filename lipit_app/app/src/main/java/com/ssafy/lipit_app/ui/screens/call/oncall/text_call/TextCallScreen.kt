@@ -73,7 +73,7 @@ fun TextCallScreen(
             Log.d("TextCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
             voiceCallViewModel._state.update { it.copy(isLoading = true) }
 
-            delay(15000L) // 로딩 보여주는 시간
+            delay(7000L) // 리포트 로딩 보여주는 시간
 
             voiceCallViewModel._state.update { it.copy(isLoading = false) }
 

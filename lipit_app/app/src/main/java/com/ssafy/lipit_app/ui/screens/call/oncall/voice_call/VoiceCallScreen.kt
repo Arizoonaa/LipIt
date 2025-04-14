@@ -234,7 +234,7 @@ fun VoiceCallScreen(
             Log.d("VoiceCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
             viewModel._state.update { it.copy(isLoading = true) }
 
-            delay(15000L) // 로딩 보여주는 시간
+            delay(7000L) // 리포트 로딩 보여주는 시간
 
             viewModel._state.update { it.copy(isLoading = false) }
 
@@ -461,6 +461,7 @@ private fun cancelAllTodayAlarms(context: Context) {
     Log.d("VoiceCallScreen", "오늘 예정된 모든 알람 취소 완료")
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Preview(showBackground = true)
 @Composable
 fun VoiceCallScreenPreview() {
@@ -495,6 +496,7 @@ fun VoiceCallScreenPreview() {
     )
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Preview(showBackground = true)
 @Composable
 fun CallScreenPreview() {
