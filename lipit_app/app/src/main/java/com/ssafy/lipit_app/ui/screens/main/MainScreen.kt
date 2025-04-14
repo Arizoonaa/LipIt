@@ -243,7 +243,7 @@ fun MainScreen(
         }
     ) {
         // ***** 기존 MainScreen UI
-        var selectedDay by remember { mutableStateOf(state.selectedDay) }
+        //var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
         Column(
             modifier = Modifier
@@ -263,15 +263,19 @@ fun MainScreen(
                 TodaysSentence(viewModel, context) // 오늘의 문장
 
                 WeeklyCallsSection(
-                    selectedDay = selectedDay,
+                    selectedDay = state.selectedDay,
                     callItems = state.callItems,
                     onIntent = {
                         Log.d("TAG", "MainScreen: ${state.callItems}")
-                        if (it is MainIntent.OnDaySelected) {
-                            selectedDay = it.day
-                        } else {
-                            onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
-                        }
+                        
+                        // 무한 리다이렉팅 현상 때문에 뷰모델에서 처리하는 것으로 변경
+                        onIntent(it)
+                        
+//                        if (it is MainIntent.OnDaySelected) {
+//                            state.selectedDay = it.day
+//                        } else {
+//                            onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+//                        }
                     }
                 )
 
