@@ -120,7 +120,7 @@ fun TextCallScreen(
                     popUpTo("call_screen") { inclusive = true }
                 }
             },
-            title = { Text("Report 생성 실패", fontWeight = FontWeight.Bold) },
+            title = { Text(" 조금 더 대화해주세요🥲", fontWeight = FontWeight.Bold) },
             text = { Text("사용 글자 수가 100자 이하인 경우, 리포트가 생성되지 않습니다.") },
             confirmButton = {
                 Text(
