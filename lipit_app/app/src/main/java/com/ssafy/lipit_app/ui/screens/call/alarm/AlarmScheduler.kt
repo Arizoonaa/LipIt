@@ -41,9 +41,12 @@ class AlarmScheduler(private val context: Context) {
     ): Boolean {
         try {
 
-            // 이미 오늘 통화를 완료했는지 확인
-            if (DailyCallTracker.isCallCompletedForToday(context)) {
-                Log.d(TAG, "오늘은 이미 통화를 완료했습니다. 알람 예약을 건너뜁니다.")
+            // 현재 로그인한 memberId 가져오기
+            val currentMemberId = SharedPreferenceUtils.getMemberId()
+
+            // 특정 알람이 이미 완료되었는지 확인
+            if (DailyCallTracker.isAlarmCompletedForToday(context, alarmId)) {
+                Log.d(TAG, "알람 ID: ${alarmId}는 오늘 이미 통화를 완료했습니다. 알람 예약을 건너뜁니다.")
                 return false
             }
 
@@ -53,6 +56,7 @@ class AlarmScheduler(private val context: Context) {
                 putExtra("CALLER_NAME", callerName)
                 putExtra("ALARM_ID", alarmId)
                 putExtra(CallActionReceiver.EXTRA_RETRY_COUNT, retryCount)
+                putExtra("MEMBER_ID", currentMemberId) // 멤버 ID도 함께 전달
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
@@ -76,21 +80,18 @@ class AlarmScheduler(private val context: Context) {
             }
 
             // Android 버전에 따라 알람 설정
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                // Android 6.0(M) 이상: Doze 모드에서도 작동
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTimeMillis,
-                    pendingIntent
-                )
-            } else {
-                // Android 6.0 미만
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTimeMillis,
-                    pendingIntent
-                )
-            }
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTimeMillis,
+                pendingIntent
+            )
+
+            // 알람 예약 상태 저장
+            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + alarmId
+            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+            SharedPreferenceUtils.saveBoolean(registeredKey, true)
+            SharedPreferenceUtils.saveString(timestampKey, triggerTimeMillis.toString())
+
 
             Log.d(TAG, "통화 알림 예약: $callerName, 시간: $time, ID: $alarmId, 재시도: $retryCount")
             return true
@@ -116,6 +117,12 @@ class AlarmScheduler(private val context: Context) {
             alarmManager.cancel(pendingIntent)
             pendingIntent.cancel()
 
+            // SharedPreference에서 알람 데이터 제거
+            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + alarmId
+            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+            SharedPreferenceUtils.remove(registeredKey)
+            SharedPreferenceUtils.remove(timestampKey)
+
             Log.d(TAG, "알람 취소: ID $alarmId")
         } catch (e: Exception) {
             Log.e(TAG, "알람 취소 실패: ${e.message}", e)
@@ -133,12 +140,6 @@ class AlarmScheduler(private val context: Context) {
         for (i in 1..maxRetryCount) {
             val retryAlarmId = baseAlarmId + 1000 + i
             cancelAlarm(retryAlarmId)
-
-            // SharedPreference에서 알람 데이터 제거
-            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + retryAlarmId
-            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + retryAlarmId
-            SharedPreferenceUtils.remove(registeredKey)
-            SharedPreferenceUtils.remove(timestampKey)
         }
 
         Log.d(TAG, "오늘의 모든 알람 취소 완료")

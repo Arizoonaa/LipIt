@@ -29,10 +29,21 @@ class ScheduledCallReceiver : BroadcastReceiver() {
         val alarmId = intent.getIntExtra("ALARM_ID", 0)
         val retryCount = intent.getIntExtra(CallActionReceiver.EXTRA_RETRY_COUNT, 0)
 
-        Log.d(TAG, "발신자: $callerName, 알람 ID: $alarmId, 재시도: $retryCount")
+        // intent에서 memberId 추출 (없으면 현재 로그인한 memberId 사용)
+        val memberId = intent.getLongExtra("MEMBER_ID", 0L).let {
+            if (it == 0L) SharedPreferenceUtils.getMemberId() else it
+        }
+
+        Log.d(TAG, "발신자: $callerName, 알람 ID: $alarmId, 재시도: $retryCount, 멤버ID: $memberId")
 
         // 알람 데이터 정리
         clearAlarmData(alarmId)
+
+        // 해당 멤버ID가 오늘 이미 통화를 완료했는지 확인
+        if (DailyCallTracker.isCallCompletedForTodayByMember(context, memberId)) {
+            Log.d(TAG, "멤버ID: ${memberId}는 이미 오늘 통화를 완료했습니다. 알림을 표시하지 않습니다.")
+            return
+        }
 
         // 통화 알림 표시
         try {
@@ -42,6 +53,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
                 putExtra(CallActionReceiver.EXTRA_RETRY_COUNT, retryCount)
                 putExtra("CALLER_NAME", callerName)
                 putExtra("ALARM_ID", alarmId)
+                putExtra("MEMBER_ID", memberId)
             }
 
             val declineIntent = PendingIntent.getBroadcast(
@@ -59,7 +71,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
             )
 
             // 타임아웃 설정 (응답 없을 경우 부재중 처리)
-            setupMissedCallTimeout(context, callerName, alarmId, retryCount)
+            setupMissedCallTimeout(context, callerName, alarmId, retryCount, memberId)
 
             Log.d(TAG, "통화 알림 표시 성공")
         } catch (e: Exception) {
@@ -71,7 +83,13 @@ class ScheduledCallReceiver : BroadcastReceiver() {
     /**
      * 부재중 전화 타임아웃 설정
      */
-    private fun setupMissedCallTimeout(context: Context, callerName: String, alarmId: Int, retryCount: Int) {
+    private fun setupMissedCallTimeout(
+        context: Context,
+        callerName: String,
+        alarmId: Int,
+        retryCount: Int,
+        memberId: Long
+    ) {
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             // 알림이 아직 활성 상태인지 확인
@@ -86,6 +104,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
                     putExtra("CALLER_NAME", callerName)
                     putExtra("ALARM_ID", alarmId)
                     putExtra(CallActionReceiver.EXTRA_RETRY_COUNT, retryCount)
+                    putExtra("MEMBER_ID", memberId)
                 }
 
                 // 부재중 처리 브로드캐스트 전송
@@ -95,7 +114,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
                 CallNotificationHelper.cancelCallNotification(context)
 
                 // 부재중 알림 표시
-                CallNotificationHelper.showMissedCallNotification(context, callerName, retryCount)
+                CallNotificationHelper.showMissedCallNotification(context, callerName, retryCount, alarmId)
                 Log.d(TAG, "통화 응답 없음 - 부재중 처리")
             }
         }, CallActionReceiver.MISSED_CALL_TIMEOUT_SECONDS * 1000L)

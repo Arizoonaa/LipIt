@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +21,7 @@ import com.ssafy.lipit_app.navigation.NavGraph
 import com.ssafy.lipit_app.theme.LipItTheme
 import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
+import com.ssafy.lipit_app.ui.screens.call.alarm.DailyCallTracker
 
 private const val TAG = "MainActivity"
 
@@ -50,8 +52,20 @@ class MainActivity : ComponentActivity() {
         // 알람 스케줄러 초기화
         alarmScheduler = AlarmScheduler(this)
 
+        // 통화 초기화
+        DailyCallTracker.resetCallCompletionStatus(this)
+
+        // 알림 리스트(테스트용)
+        val callRecords = DailyCallTracker.getAllCallRecords(this)
+        Log.d("통화기록", "전체 통화 기록: $callRecords")
+
+        val isCompleteToday = DailyCallTracker.isCallCompletedForToday(this)
+        Log.d(TAG, "오늘 통화 완료 여부: $isCompleteToday")
+
+
         val initialDestination = intent.getStringExtra("NAVIGATION_DESTINATION")
         Log.d(TAG, "Initial destination: $initialDestination")
+
 
         setContent {
 
@@ -59,7 +73,8 @@ class MainActivity : ComponentActivity() {
 
             LipItTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                         .navigationBarsPadding(),
                     color = Color.Transparent
                 ) {

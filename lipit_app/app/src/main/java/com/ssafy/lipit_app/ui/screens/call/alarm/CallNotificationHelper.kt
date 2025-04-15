@@ -34,7 +34,7 @@ object CallNotificationHelper {
     private const val TAG = "CallNotification"
     private const val CALL_CHANNEL_ID = "call_channel"
     const val CALL_NOTIFICATION_ID = 1001
-    private const val MISSED_CALL_NOTIFICATION_ID = 1002
+    const val MISSED_CALL_NOTIFICATION_ID_BASE = 2000
 
     // 진동 패턴: 0ms 대기, 500ms 진동, 500ms 대기, 500ms 진동 (반복)
     private val VIBRATION_PATTERN = longArrayOf(0, 500, 500, 500)
@@ -259,6 +259,46 @@ object CallNotificationHelper {
     }
 
     /**
+     * 특정 부재중 전화 알림만 취소
+     */
+    fun cancelMissedCallNotification(context: Context, alarmId: Int) {
+        val ctx = applicationContext ?: context.applicationContext
+        val notificationManager = NotificationManagerCompat.from(ctx)
+
+        // 알람 ID로 고유한 부재중 전화 알림 ID 생성
+        val missedCallNotificationId = getMissedCallNotificationId(alarmId)
+
+        notificationManager.cancel(missedCallNotificationId)
+        Log.d(TAG, "부재중 전화 알림 취소됨 (알람 ID: $alarmId, 알림 ID: $missedCallNotificationId)")
+    }
+
+    /**
+     * 모든 부재중 전화 알림 취소
+     */
+    fun cancelAllMissedCallNotifications(context: Context) {
+        val ctx = applicationContext ?: context.applicationContext
+        val notificationManager = NotificationManagerCompat.from(ctx)
+
+        // Android API 23 이상에서만 activeNotifications 사용 가능
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val activeNotifications = notificationManager.activeNotifications
+
+            // MISSED_CALL_NOTIFICATION_ID_BASE 이상의 알림 ID를 가진 모든 알림 취소
+            for (notification in activeNotifications) {
+                if (notification.id >= MISSED_CALL_NOTIFICATION_ID_BASE) {
+                    notificationManager.cancel(notification.id)
+                }
+            }
+        } else {
+            // API 23 미만에서는 부재중 알림의 범위를 알 수 없어 모든 알림 취소
+            // 실제 앱에서는 알림 ID 목록을 별도로 관리하는 추가 로직이 필요할 수 있음
+            Log.w(TAG, "API 23 미만에서는 모든 부재중 알림 개별 취소가 불가능합니다")
+        }
+
+        Log.d(TAG, "모든 부재중 전화 알림 취소됨")
+    }
+
+    /**
      * 알림이 활성 상태인지 확인
      */
     fun isNotificationActive(context: Context, notificationId: Int): Boolean {
@@ -270,14 +310,15 @@ object CallNotificationHelper {
     /**
      * 부재중 전화 알림 표시
      */
-    fun showMissedCallNotification(context: Context, callerName: String, retryCount: Int) {
+    fun showMissedCallNotification(context: Context, callerName: String, retryCount: Int, alarmId: Int) {
         // 알림 탭 시 실행될 인텐트
         val contentIntent = PendingIntent.getActivity(
             context,
-            2,
+            alarmId,  // 고유한 요청 코드 사용
             Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("NAVIGATION_DESTINATION", "missedCalls")
+                putExtra("ALARM_ID", alarmId)  // 알람 ID도 함께 전달
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -301,8 +342,19 @@ object CallNotificationHelper {
         // 알림 표시 (권한 확인)
         val notificationManager = NotificationManagerCompat.from(context)
         if (hasNotificationPermission(context)) {
-            notificationManager.notify(MISSED_CALL_NOTIFICATION_ID, builder.build())
-            Log.d(TAG, "부재중 전화 알림 표시됨: $callerName (재시도: $retryCount)")
+            // 알람 ID를 이용해 고유한 알림 ID 생성
+            val missedCallNotificationId = getMissedCallNotificationId(alarmId)
+
+            notificationManager.notify(missedCallNotificationId, builder.build())
+            Log.d(TAG, "부재중 전화 알림 표시됨: $callerName (재시도: $retryCount, 알람 ID: $alarmId, 알림 ID: $missedCallNotificationId)")
         }
+    }
+
+
+    /**
+     * 알람 ID를 기반으로 부재중 전화 알림의 고유 ID 생성
+     */
+    private fun getMissedCallNotificationId(alarmId: Int): Int {
+        return MISSED_CALL_NOTIFICATION_ID_BASE + (alarmId % 1000)
     }
 }

@@ -25,9 +25,9 @@ class CallActionReceiver : BroadcastReceiver() {
         const val ACTION_MISSED_CALL = "com.ssafy.lipit_app.ACTION_MISSED_CALL"
 
         // 설정 상수
-        const val MAX_RETRY_COUNT = 2             // 최대 재시도 횟수
+        const val MAX_RETRY_COUNT = 1             // 최대 재시도 횟수
         const val RETRY_INTERVAL_MINUTES = 5      // 재시도 간격(분)
-        const val MISSED_CALL_TIMEOUT_SECONDS = 15 // 부재중 처리 타임아웃(초)
+        const val MISSED_CALL_TIMEOUT_SECONDS = 180 // 부재중 처리 타임아웃(초)
 
         // 인텐트 Extra 키
         const val EXTRA_RETRY_COUNT = "RETRY_COUNT"
@@ -38,26 +38,46 @@ class CallActionReceiver : BroadcastReceiver() {
         val alarmId = intent.getIntExtra("ALARM_ID", 0)
         val retryCount = intent.getIntExtra(EXTRA_RETRY_COUNT, 0)
 
+        // intent에서 memberId 추출 (없으면 현재 로그인한 memberId 사용)
+        val memberId = intent.getLongExtra("MEMBER_ID", 0L).let {
+            if (it == 0L) SharedPreferenceUtils.getMemberId() else it
+        }
+        Log.d(TAG, "통화 액션 수신: ${intent.action}, 멤버ID: $memberId")
+
         when (intent.action) {
-            ACTION_ACCEPT_CALL -> handleAcceptCall(context, alarmId)
-            ACTION_DECLINE_CALL -> handleDeclineCall(context, callerName, alarmId, retryCount)
-            ACTION_MISSED_CALL -> handleMissedCall(context, callerName, alarmId, retryCount)
+            ACTION_ACCEPT_CALL -> handleAcceptCall(context, alarmId, memberId)
+            ACTION_DECLINE_CALL -> handleDeclineCall(
+                context,
+                callerName,
+                alarmId,
+                retryCount,
+                memberId
+            )
+
+            ACTION_MISSED_CALL -> handleMissedCall(
+                context,
+                callerName,
+                alarmId,
+                retryCount,
+                memberId
+            )
         }
     }
 
     /**
      * 통화 수락 처리
      */
-    private fun handleAcceptCall(context: Context, alarmId: Int) {
+    private fun handleAcceptCall(context: Context, alarmId: Int, memberId: Long) {
         Log.d(TAG, "전화 수락됨 (알람 ID: $alarmId)")
 
-        // 오늘 통화 완료로 표시
-        DailyCallTracker.markTodayCallCompleted(context)
+        // 특정 알람만 오늘 통화 완료로 표시
+        DailyCallTracker.markAlarmCompleted(context, alarmId)
 
 
         // VoiceCall 화면으로 이동
         val acceptIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("NAVIGATION_DESTINATION", "onVoiceCall")
         }
         context.startActivity(acceptIntent)
@@ -66,15 +86,25 @@ class CallActionReceiver : BroadcastReceiver() {
         CallNotificationHelper.stopVibration(context)
         CallNotificationHelper.cancelCallNotification(context)
 
+        // 현재 알람에 해당하는 부재중 전화 알림만 취소
+        cancelAllMissedCallNotifications(context, alarmId)
+
         // 모든 관련 재시도 알람 취소
         cancelAllRetryAlarms(context, alarmId)
+
     }
 
     /**
      * 통화 거절 처리
      */
-    private fun handleDeclineCall(context: Context, callerName: String, alarmId: Int, retryCount: Int) {
-        Log.d(TAG, "전화 거절됨 (알람 ID: $alarmId, 재시도: $retryCount)")
+    private fun handleDeclineCall(
+        context: Context,
+        callerName: String,
+        alarmId: Int,
+        retryCount: Int,
+        memberId: Long
+    ) {
+        Log.d(TAG, "전화 거절됨 (알람 ID: $alarmId, 재시도: $retryCount, 멤버ID: $memberId)")
 
         // 최대 재시도 횟수 미만이면 다음 알람 예약
         if (retryCount < MAX_RETRY_COUNT) {
@@ -103,12 +133,18 @@ class CallActionReceiver : BroadcastReceiver() {
     /**
      * 부재중 전화 처리
      */
-    private fun handleMissedCall(context: Context, callerName: String, alarmId: Int, retryCount: Int) {
-        Log.d(TAG, "전화 부재중 처리 (알람 ID: $alarmId, 재시도: $retryCount)")
+    private fun handleMissedCall(
+        context: Context,
+        callerName: String,
+        alarmId: Int,
+        retryCount: Int,
+        memberId: Long
+    ) {
+        Log.d(TAG, "전화 부재중 처리 (알람 ID: $alarmId, 재시도: $retryCount, 멤버ID: $memberId)")
 
         // 최대 재시도 횟수 미만이면 다음 알람 예약
         if (retryCount < MAX_RETRY_COUNT) {
-            val nextAlarmId = alarmId + 1000 + (retryCount + 1)
+            val nextAlarmId = getBaseAlarmId(alarmId) + 1000 + (retryCount + 1)
             val nextAlarmTime = LocalDateTime.now().plusMinutes(RETRY_INTERVAL_MINUTES.toLong())
 
             // 새 알람 예약
@@ -130,6 +166,45 @@ class CallActionReceiver : BroadcastReceiver() {
     }
 
     /**
+     * 기본 알람 ID 추출 (재시도 번호 제거)
+     */
+    private fun getBaseAlarmId(alarmId: Int): Int {
+        // 알람 ID가 재시도로 인해 변경된 경우 (1000 단위로 증가)
+        // 원래 알람 ID로 되돌린다
+        return if (alarmId > 1000) {
+            val retryCountInId = (alarmId % 1000)
+            if (retryCountInId in 1..MAX_RETRY_COUNT) {
+                alarmId - 1000 - retryCountInId
+            } else {
+                alarmId
+            }
+        } else {
+            alarmId
+        }
+    }
+
+    /**
+     * 현재 알람과 관련된 모든 부재중 전화 알림 취소
+     */
+    private fun cancelAllMissedCallNotifications(context: Context, alarmId: Int) {
+        // 기본 알람 ID 추출
+        val baseAlarmId = getBaseAlarmId(alarmId)
+
+        // 기본 알람 ID에 해당하는 부재중 알림 취소
+        CallNotificationHelper.cancelMissedCallNotification(context, baseAlarmId)
+
+        // 관련 재시도 알람에 해당하는 부재중 알림 모두 취소
+        for (i in 1..MAX_RETRY_COUNT) {
+            val retryAlarmId = baseAlarmId + 1000 + i
+            CallNotificationHelper.cancelMissedCallNotification(context, retryAlarmId)
+            Log.d(TAG, "부재중 알림 취소: 알람 ID=$retryAlarmId")
+        }
+
+        Log.d(TAG, "모든 관련 부재중 알림 취소 완료: 기본 알람 ID=$baseAlarmId")
+    }
+
+
+    /**
      * 모든 관련 재시도 알람 취소
      */
     private fun cancelAllRetryAlarms(context: Context, baseAlarmId: Int) {
@@ -142,12 +217,6 @@ class CallActionReceiver : BroadcastReceiver() {
         for (i in 1..MAX_RETRY_COUNT) {
             val retryAlarmId = baseAlarmId + 1000 + i
             alarmScheduler.cancelAlarm(retryAlarmId)
-
-            // SharedPreference에서 알람 데이터 제거
-            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + retryAlarmId
-            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + retryAlarmId
-            SharedPreferenceUtils.remove(registeredKey)
-            SharedPreferenceUtils.remove(timestampKey)
 
             Log.d(TAG, "재시도 알람 취소: ID=$retryAlarmId")
         }
