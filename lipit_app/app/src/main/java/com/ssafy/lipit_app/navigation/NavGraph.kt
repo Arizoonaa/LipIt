@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.navigation
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -22,6 +24,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.ssafy.lipit_app.MainActivity
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
@@ -435,13 +438,29 @@ fun NavGraph(
             }
 
             // 뒤로가기 처리 추가
+//            BackHandler {
+//                // 뒤로가기 시 메인으로 직접 이동
+//                navController.navigate("main") {
+//                    popUpTo("main") { inclusive = false }
+//                    launchSingleTop = true
+//                }
+//            }
+
+
+            // 보고서 화면의 뒤로가기 처리 수정
             BackHandler {
-                // 뒤로가기 시 메인으로 직접 이동
-                navController.navigate("main") {
-                    popUpTo("main") { inclusive = false }
-                    launchSingleTop = true
+                // 완전히 새로운 태스크로 메인 화면 시작
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                context.startActivity(intent)
+
+                // 필요한 경우 현재 액티비티 종료
+                if (context is Activity) {
+                    (context as Activity).finish()
                 }
             }
+
 
             ReportScreen(
                 state = viewModel.state.collectAsState().value,
