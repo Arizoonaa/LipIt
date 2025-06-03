@@ -29,14 +29,17 @@
 ## 📌팀원 소개
 ### D102 - 애리조나
 
-| 이름    | 역할  | 별명    | 파트 |
-| ------ | ------ | ---- | ---|
-| **이승지**  | 팀장 | 브로큰 | AI, Android |   
-| **이사랑** | 팀원 | 사란 | AI, Android |      
-| **서정후** |  팀원 | 즈후 | 디자인, Android  |     
-| **서미지** | 팀원 | 미디 | 인프라, 백엔드, RAG |  
-| **김환** | 팀원 | 애리조나  | 백엔드, UCC  |  
- | **구민성** | 팀원 | 베이비  | 백엔드 |  
+| <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">이승지</div> |  <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">이사랑</div> | <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">서정후</div> |
+|:---------:|:---------:|:---------:|
+| [<img src="https://avatars.githubusercontent.com/bmlsj" height=200 width=200> <br/> @bmlsj](https://github.com/bmlsj) | [<img src="https://avatars.githubusercontent.com/ipcp365" height=200 width=200> <br/> @ipcp365](https://github.com/ipcp365)  | [<img src="https://avatars.githubusercontent.com/bluemango0312" height=200 width=200> <br/> @bluemango0312](https://github.com/bluemango0312) |
+| 팀장, AI, Android |  AI, Android | Android, Design | 
+| 브로큰 | 사란 | 즈후 |
+
+| <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">서미지</div> | <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">김환</div> | <div align="center" style="display: flex; align-items: center; justify-content: center; height: 100px;">구민성</div> |
+|:--------:|:---------:|:---------:|
+| [<img src="https://avatars.githubusercontent.com/itsanisland" height=200 width=200> <br/> @itsanisland](https://github.com/itsanisland) | [<img src="https://avatars.githubusercontent.com/k-hwan" height=200 width=200> <br/> @k-hwan](https://github.com/k-hwan) | [<img src="https://avatars.githubusercontent.com/Guminsung" height=200 width=200> <br/> @Guminsung](https://github.com/Guminsung) |
+| BE, Infra, RAG | BE, UCC | BE |
+| 미디 | 애리조나 | 베이비 |
 
 <br>
 
