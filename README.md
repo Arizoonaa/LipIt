@@ -196,7 +196,7 @@
     - 셀럽 카드를 뒤집을 경우, 해당 음성을 들을 수 있음
     - 셀럽 음성은 **리워드 형식**으로 레벨 업으로로 모든 셀럽 음성 얻을 수 있음
 
-    <img width=150 src="https://velog.velcdn.com/images/bmlsj/post/5b9afad8-b640-4c57-b674-b9ff21f1423c/image.gif"/>
+    <img src="gif/셀럽보이스선택.gif" width="200" />
 
 
 2) 선택한 보이스로 전화 영어 학습
@@ -204,7 +204,7 @@
         - 각 모드별 **번역과 자막 기능**이 존재
     - RAG를 사용 => **AI가 이전 대화 기록을 기억**해 더 친근한 대화 가능
 
-    <img width=150 src="https://velog.velcdn.com/images/bmlsj/post/fa30de01-9dee-4516-a894-0853b078cba7/image.gif"/>
+    <img src="gif/셀럽보이스기능.gif" width="250" />
 
 ### 3. 통화 알림 설정
 
@@ -214,7 +214,7 @@
 - 부재중 시, 부재중 알림이 뜨며 하루에 총 2번까지 **부재중 전화**가 옴
 - 전화를 받을 시, 당일 전화는 더이상 오지 않음
 
-<img width=150 src="https://velog.velcdn.com/images/bmlsj/post/6fc8949f-c32a-4312-9fb7-5b1334951a8b/image.gif"/>
+<img src="gif/전화알림설정.gif" width="200" />
 
 
 ### 3. 커스텀 보이스 생성
@@ -223,7 +223,7 @@
 - 총 10개의 영어 문장을 따라 읽으면 보이스 생성
 - 정확한 보이스 생성을 위해 **음성과 텍스트의 발음 유사도**를 통과해야 다음 문장을 녹음 할 수 잇음
 
- <img width=150 src="https://velog.velcdn.com/images/bmlsj/post/158484f5-272a-4368-beea-839d5ad30195/image.gif"/>
+ <img src="gif/커스텀보이스녹음.gif" width="200" />
 
 
 ### 4. AI 학습 리포트 생성
@@ -235,7 +235,7 @@
 - **원어민 표현** : 사용자가 말한 문장에서 원어민이 사용하는 표현으로 고쳐줌
 - **전체 대화 스크립트** : AI와 전체 대화 내역 제공
 
-    <img width=150 src="https://velog.velcdn.com/images/bmlsj/post/ad0454d3-c5e3-438e-a748-bf8941cd0166/image.gif"/>
+    <img src="gif/리포트.gif" width="200" />
 
 
 
