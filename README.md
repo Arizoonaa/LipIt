@@ -166,10 +166,7 @@
 - [API 명세서 및 Swagger](docs/API.md)
 - [ERD 다이어그램](docs/ERD.md)
 - [시스템 아키텍처](docs/SystemArchitecture.md)
-- [Flow Chart]()
 - [시연 영상](https://www.youtube.com/watch?v=TvBajxe-3wI)
-- [중간 발표 PPT](docs/[Lip It] 중간 발표.pdf)
-- [최종 발표 PPT](docs/[Lip It] 최종 발표.pdf)
 
 
 <br>
