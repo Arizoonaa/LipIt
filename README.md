@@ -266,16 +266,27 @@
 </table>
 
 
-
-
 <br>
 
 🎤 음성 모델 2 : XTTS API 기반으로, **사용자가 직접 녹음한 음성**을 바탕으로 **제로샷 커스텀 음성 생성**을 실시간 수행
 
-- 음성 wav 파일 들어갈 예정
+<table style="margin: auto; text-align: center;">
+  <tr>
+    <th>녹음된 원본 목소리</th>
+    <th>XTTS API를 활용한 목소리</th>
+  </tr>
+  <tr>
+    <td><video src="https://github.com/user-attachments/assets/aa2c31d3-c57a-46d9-a7f1-8746072a0dfd" controls width="250"></video></td>
+    <td><video src="https://github.com/user-attachments/assets/ff9b41af-2012-4d09-a89c-db07070b412c" controls width="250"></video></td>
+  </tr>
+</table>
+
+목소리 출처: 유선무선이
+(유소나 고마오❤️)
+
+<br>
 
 ### 영상 AI
-
 
 <img src="docs/hallo.gif" width="700"/>
 
